@@ -15,9 +15,9 @@ except ImportError:
 
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/drive-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/drive'
+SCOPES = 'https://www.googleapis.com/auth/drive.file'
 CLIENT_SECRET_FILE = 'client_secret.json'
-APPLICATION_NAME = 'Drive API Python Quickstart'
+APPLICATION_NAME = 'FAZ 2 Google Drive'
 MIME_TYPE = 'application/pdf'
 UPLOAD_FOLDER_ID = '0B2jwM0WcLmizNVNLMHhyTDltZDA'
 
@@ -31,7 +31,7 @@ def get_credentials():
     Returns:
         Credentials, the obtained credential.
     """
-    print('get_credentials')
+    print('Validating credentials')
     home_dir = os.path.expanduser('~')
     credential_dir = os.path.join(home_dir, '.credentials')
     if not os.path.exists(credential_dir):
@@ -71,7 +71,7 @@ def upload(filename):
     #Upload file   
     res = service.files().create(body=metadata, media_body=file_loc).execute()
     if res:
-        print('Uploaded "%s" (%s)' % (file_loc, res['mimeType']))
+        print('Uploaded "%s" (%s)' % (filename, res['mimeType']))
     else:
         print('No respsonse from Google Drive')
     #

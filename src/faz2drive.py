@@ -6,9 +6,11 @@ Created on Nov 1, 2013
 import requests
 import datetime
 import json
-import urlparse3
 import os
 import google_drive as gdrive
+import time
+import os
+import errno
 
 # debian hack
 from requests.adapters import HTTPAdapter
@@ -26,6 +28,8 @@ class MyAdapter(HTTPAdapter):
 
 class FazLoader(object):
 
+    STORE_PATH = "../downloads/"
+
     def __init__(self, faz_login, drive_config):
         '''
         @param faz_login: tuple of FAZ login information (user, password)
@@ -35,7 +39,9 @@ class FazLoader(object):
         self.drive_config = drive_config
         
         # path to store pdf files
-        self.storePath = "../downloads/"
+        self.storePath = FazLoader.STORE_PATH
+
+        self.make_sure_path_exists(self.storePath)
         
         # download FAZ with rhein main part
         self.downloadRMZ = False
@@ -99,6 +105,7 @@ class FazLoader(object):
         found_prev = self._deletePrevious(filename)
 
         self.upload2Drive(filename)
+        self.removeDownload(filename)
         return True
     
     def getDownloadLink(self, year, month, day, rmz = False):
@@ -126,12 +133,15 @@ class FazLoader(object):
     def downloadAvailable(self):
         url = "http://www.faz.net/e-paper/epaper/list/FAZ"
         req = self.s.get(url)
+        currentDate = (time.strftime("%d.%m.%Y"))
         if(req.status_code != 200):
             return False
         json_info = json.loads(req.text)
         for i in range(0, len(json_info)):
             # check all available publications
             entities = json_info[i]["ausgaben"]
+            ## dd/mm/yyyy format
+            
             for entity in entities: 
                 # extract date
                 date = entity["displayDatum"]
@@ -139,11 +149,25 @@ class FazLoader(object):
                 day = int(day)
                 month = int(month)
                 year = int(year)
-                if entity["typ"] == "FAZ" and self.downloadFAZ:
-                    self.download(year, month, day, False)
-                if entity["typ"] == "FAZ_RMZ" and self.downloadRMZ:
-                    self.download(year, month, day, True)
+                #Only download the issue of the current day
+                if date == currentDate:
+                    if entity["typ"] == "FAZ" and self.downloadFAZ:
+                        self.download(year, month, day, False)
+                    if entity["typ"] == "FAZ_RMZ" and self.downloadRMZ:
+                        self.download(year, month, day, True)
     
     def upload2Drive(self, filename):        
         print ("Upload file to Google Drive")
         gdrive.upload(filename)
+
+
+    def make_sure_path_exists(self, path):
+        try:
+            os.makedirs(path)
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise
+
+    def removeDownload(self, filename):        
+        os.remove(self.STORE_PATH + '/' + filename)
+        print('Removed download file  {}'.format(filename))

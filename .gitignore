@@ -2,3 +2,4 @@ client_secret.json
 downloads
 env.cfg
 src/__pycache__/
+src/*.pyc

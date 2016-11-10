@@ -5,16 +5,28 @@ files to your Kindle
 
 Attention: It requires a valid e-paper abonement of FAZ.net
 
-@author: pete
+@author: karazy
 '''
 import faz2drive
+import configparser
+
+config = configparser.ConfigParser()
+config.read('env.cfg')
 
 # FAZ login data
-FAZ_USER = "USERNAME"
-FAZ_PASS = "PASSWORD"
+FAZ_USER = config['FAZ']['Username']
+FAZ_PASS = config['FAZ']['Password']
 
 # Google Drive upload folder ID
-DRIVE_UPLOAD_FOLDER_ID = 'FOLDER_ID'
+DRIVE_UPLOAD_FOLDER_ID = config['DRIVE']['Upload_folder_id']
+
+print ('Starting faz2googledrive...')
+print ('Requesting downloads for {} and saving them to {}'.format(FAZ_USER, DRIVE_UPLOAD_FOLDER_ID))
 
 fazload = faz2drive.FazLoader((FAZ_USER, FAZ_PASS), (DRIVE_UPLOAD_FOLDER_ID))
 fazload.downloadAvailable()
+
+#TODO
+# - improve app auth
+# - improve date check
+# - cleanup and docs

@@ -6,23 +6,14 @@ Created on Nov 1, 2013
 import requests
 import datetime
 import json
-import urlparse
+import urlparse3
 import os
+import google_drive as gdrive
 
 # debian hack
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.poolmanager import PoolManager
 import ssl
-
-# email hack
-import smtplib
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email import Encoders
-
-
-
 
 
 # hack for older debian version according to
@@ -35,25 +26,23 @@ class MyAdapter(HTTPAdapter):
 
 class FazLoader(object):
 
-    def __init__(self, faz_login, gmail_login, amazonmail):
+    def __init__(self, faz_login, drive_config):
         '''
         @param faz_login: tuple of FAZ login information (user, password)
-        @param gmail_login: tuple of Gmail login information (user, password)
-        @param amazonmail: kindle personal document email address
+        @param drive_config: tuple of Gmail login information (user, password)
         '''
         self.fazLogin = faz_login
-        self.gmailLogin = gmail_login
-        self.amazonmail = amazonmail
+        self.drive_config = drive_config
         
         # path to store pdf files
-        self.storePath = "downloads/"
+        self.storePath = "../downloads/"
         
         # download FAZ with rhein main part
         self.downloadRMZ = False
         # download FAZ only
         self.downloadFAZ = True
         # if new files were downloaded, send them directly to kindle
-        self.download2Kindle = True
+        self.download2Kindle = False
         
         self.s = requests.Session()
         self.s.mount('https://', MyAdapter())
@@ -80,7 +69,7 @@ class FazLoader(object):
                 # delete older file
                 found_older = True
                 os.remove(self.storePath+pdf_file)
-                print "removed older version of " + filename + ": "+pdf_file
+                print ("removed older version of " + filename + ": "+pdf_file)
         return found_older
 
     def download(self, year, month, day, rmz = False):
@@ -88,16 +77,16 @@ class FazLoader(object):
         
         # if link could not be extracted
         if(not url):
-            print "No download link could be found for %d-%02d-%02d" % (year, month, day)
+            print ("No download link could be found for %d-%02d-%02d" % (year, month, day))
             return False
         
         # get file name from url
         filename =  url.split('/', )[-1]
         if os.path.isfile(self.storePath + filename):
-            print "File " + filename +" already exists"
+            print ("File " + filename +" already exists")
             return False
         
-        print "Downloading to " + filename
+        print ("Downloading to " + filename)
         req = self.s.get(url,stream=True)
         f = open(self.storePath + filename, "wb")
         for chunk in req.iter_content(chunk_size=20*1024): 
@@ -109,11 +98,7 @@ class FazLoader(object):
         # remove previous versions
         found_prev = self._deletePrevious(filename)
 
-        # if download to kindle and no previous version of the file has been already sent
-        # avoids sending multiple versions of the file to the kindle
-        if(self.download2Kindle and not found_prev and len(self.amazonmail) > 0):
-            print "Sending " + filename + " to " + str(self.amazonmail)
-            self.mail(self.amazonmail, filename)
+        self.upload2Drive(filename)
         return True
     
     def getDownloadLink(self, year, month, day, rmz = False):
@@ -158,40 +143,7 @@ class FazLoader(object):
                     self.download(year, month, day, False)
                 if entity["typ"] == "FAZ_RMZ" and self.downloadRMZ:
                     self.download(year, month, day, True)
-                    
-    def mail(self, to, attach_file):
-        # if mail addresses are empty, don't send
-        if(len(to) == 0):
-            return 
-        msg = MIMEMultipart()
-        
-        msg['From'] = self.gmailLogin[0]
-        msg['To'] = ', '.join(to)
-        msg['Subject'] = "UPDATED FAZ"
-        
-        fname = os.path.basename(attach_file)
-        text = "New kindle file " + fname
-        msg.attach(MIMEText(text))
-        
-        # read and encode file for email use
-        part = MIMEBase('application', 'octet-stream')
-        f = open(self.storePath + attach_file, 'rb')
-        data = f.read()
-        f.close()
-        part.set_payload(data)
-        Encoders.encode_base64(part)
-        part.add_header('Content-Disposition',
-                'attachment; filename="%s"' % fname)
-        msg.attach(part)
-        
-        #connect to gmail server
-        mailserv = smtplib.SMTP("smtp.gmail.com", 587)
-        mailserv.ehlo()
-        # start encryption
-        mailserv.starttls()
-        mailserv.ehlo()
-        # send login data
-        mailserv.login(self.gmailLogin[0], self.gmailLogin[1])
-        # send email
-        mailserv.sendmail(self.gmailLogin[0], to, msg.as_string())
-        mailserv.close()
+    
+    def upload2Drive(self, filename):        
+        print ("Upload file to Google Drive")
+        gdrive.upload(filename)

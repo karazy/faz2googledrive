@@ -19,14 +19,15 @@ FAZ_PASS = config['FAZ']['Password']
 
 # Google Drive upload folder ID
 DRIVE_UPLOAD_FOLDER_ID = config['DRIVE']['Upload_folder_id']
+DRIVE_DELEGATE = config['DRIVE']['Delegate']
 
 print ('Starting faz2googledrive...')
 print ('Requesting downloads for {} and saving them to {}'.format(FAZ_USER, DRIVE_UPLOAD_FOLDER_ID))
 
-fazload = faz2drive.FazLoader((FAZ_USER, FAZ_PASS), (DRIVE_UPLOAD_FOLDER_ID))
+fazload = faz2drive.FazLoader((FAZ_USER, FAZ_PASS), (DRIVE_UPLOAD_FOLDER_ID, DRIVE_DELEGATE))
 fazload.downloadAvailable()
 
 #TODO
 # - improve app auth
-# - improve date check
+# - improve date check?
 # - cleanup and docs

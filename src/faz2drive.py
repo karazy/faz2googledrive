@@ -104,7 +104,7 @@ class FazLoader(object):
         # remove previous versions
         found_prev = self._deletePrevious(filename)
 
-        self.upload2Drive(filename)
+        self.upload2Drive(filename, self.drive_config[0], self.drive_config[1])
         self.removeDownload(filename)
         return True
     
@@ -156,9 +156,9 @@ class FazLoader(object):
                     if entity["typ"] == "FAZ_RMZ" and self.downloadRMZ:
                         self.download(year, month, day, True)
     
-    def upload2Drive(self, filename):        
+    def upload2Drive(self, filename, upload_folder_id, delegate):        
         print ("Upload file to Google Drive")
-        gdrive.upload(filename)
+        gdrive.upload(filename, upload_folder_id, delegate)
 
 
     def make_sure_path_exists(self, path):

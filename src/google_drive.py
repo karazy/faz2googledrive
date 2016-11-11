@@ -20,7 +20,7 @@ SCOPES = 'https://www.googleapis.com/auth/drive.file'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'FAZ 2 Google Drive'
 MIME_TYPE = 'application/pdf'
-UPLOAD_FOLDER_ID = '0B2jwM0WcLmizNVNLMHhyTDltZDA'
+#UPLOAD_FOLDER_ID = '0B49RQ5If-NmPY0V0bG00cHdsekE'
 
 
 def get_credentials():
@@ -53,20 +53,21 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
-def getServiceCredentials():
+def getServiceCredentials(delegate):
     print('Validating service credentials')
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('faz2drive-81a367166595.json', scopes=SCOPES)
-    return credentials
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('faz2drive-085360b9c8f3.json', scopes=SCOPES)
+    delegated_credentials = credentials.create_delegated(delegate)
+    return delegated_credentials
 
 
-def upload(filename):
+def upload(filename, upload_folder_id, delegate):
     """Shows basic usage of the Google Drive API.
 
     Creates a Google Drive API service object and outputs the names and IDs
     for up to 10 files.
     """
     #credentials = get_credentials()
-    credentials = getServiceCredentials()
+    credentials = getServiceCredentials(delegate)
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('drive', 'v3', http=http)
     
@@ -75,7 +76,7 @@ def upload(filename):
     #for filename, mimeType in FILES:
     metadata = {'name': 'FAZ_' + filename}
     metadata['mimeType'] = MIME_TYPE
-    metadata['parents'] = [UPLOAD_FOLDER_ID]
+    metadata['parents'] = [upload_folder_id]
     #if mimeType:        
     #Upload file   
     res = service.files().create(body=metadata, media_body=file_loc).execute()

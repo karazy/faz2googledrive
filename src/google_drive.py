@@ -6,6 +6,7 @@ from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
+from oauth2client.service_account import ServiceAccountCredentials
 
 try:
     import argparse
@@ -42,6 +43,7 @@ def get_credentials():
     store = Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
+        print('No credentials found. Authorize.')
         flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
         flow.user_agent = APPLICATION_NAME
         if flags:
@@ -51,13 +53,20 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
+def getServiceCredentials():
+    print('Validating service credentials')
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('faz2drive-81a367166595.json', scopes=SCOPES)
+    return credentials
+
+
 def upload(filename):
     """Shows basic usage of the Google Drive API.
 
     Creates a Google Drive API service object and outputs the names and IDs
     for up to 10 files.
     """
-    credentials = get_credentials()
+    #credentials = get_credentials()
+    credentials = getServiceCredentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('drive', 'v3', http=http)
     

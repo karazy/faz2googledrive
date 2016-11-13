@@ -3,3 +3,5 @@ downloads
 env.cfg
 src/__pycache__/
 src/*.pyc
+.DS_Store
+faz2drive-*.json

@@ -60,7 +60,7 @@ def getServiceCredentials(delegate):
     return delegated_credentials
 
 
-def upload(filename, upload_folder_id, delegate):
+def upload(filename, file_folder, upload_folder_id, delegate):
     """Shows basic usage of the Google Drive API.
 
     Creates a Google Drive API service object and outputs the names and IDs
@@ -71,7 +71,7 @@ def upload(filename, upload_folder_id, delegate):
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('drive', 'v3', http=http)
     
-    file_loc = '../downloads/' + filename
+    file_loc = file_folder + filename
 
     #for filename, mimeType in FILES:
     metadata = {'name': 'FAZ_' + filename}

@@ -28,7 +28,7 @@ class MyAdapter(HTTPAdapter):
 
 class FazLoader(object):
 
-    STORE_PATH = "../downloads/"
+    STORE_PATH = "downloads/"
 
     def __init__(self, faz_login, drive_config):
         '''
@@ -112,7 +112,11 @@ class FazLoader(object):
         s_year = str(year)
         s_month = "%02d" % (month)
         s_day = "%02d" % (day)
-        if(rmz):
+        #http://epaper.faz.net/epaper/pdf/FAS/2016-11-13/20161113FAS2313.pdf
+        if(rmz == 'FAS'):
+            url_base = "http://www.faz.net/e-paper/epaper/pdf/FAS/"
+            url = "http://www.faz.net/e-paper/epaper/overview/FAS/%s-%s-%s" % (s_year, s_month, s_day)
+        elif(rmz):
             url_base = "http://www.faz.net/e-paper/epaper/pdf/FAZ_RMZ/"
             url = "http://www.faz.net/e-paper/epaper/overview/FAZ_RMZ/%s-%s-%s" % (s_year, s_month, s_day)
         else:
@@ -131,12 +135,11 @@ class FazLoader(object):
         return dl_url
 
     def downloadAvailable(self):
-        url = "http://www.faz.net/e-paper/epaper/list/FAZ"
-        req = self.s.get(url)
         currentDate = (time.strftime("%d.%m.%Y"))
-        if(req.status_code != 200):
-            return False
-        json_info = json.loads(req.text)
+        dayOfWeek = datetime.datetime.today().weekday()
+
+        json_info = self.getAvailablePublications(dayOfWeek)        
+        
         for i in range(0, len(json_info)):
             # check all available publications
             entities = json_info[i]["ausgaben"]
@@ -153,12 +156,32 @@ class FazLoader(object):
                 if date == currentDate:
                     if entity["typ"] == "FAZ" and self.downloadFAZ:
                         self.download(year, month, day, False)
-                    if entity["typ"] == "FAZ_RMZ" and self.downloadRMZ:
+                    elif entity["typ"] == "FAZ_RMZ" and self.downloadRMZ:
                         self.download(year, month, day, True)
+                    elif entity["typ"] == "FAS":
+                        self.download(year, month, day, 'FAS')
+    
+
+    def getAvailablePublications(self, dayOfWeek):
+        if dayOfWeek == 6:
+            url = "http://www.faz.net/e-paper/epaper/list/FAS"
+        else:
+            url = "http://www.faz.net/e-paper/epaper/list/FAS"
+        
+        req = self.s.get(url)
+        if(req.status_code != 200):
+            print('Failed to retrieve publications.')
+            return False
+        else:
+            json_info = json.loads(req.text) 
+            if len(json_info) == 0:
+                print('No FAZ/FAS publications found.')           
+            return json_info
+
     
     def upload2Drive(self, filename, upload_folder_id, delegate):        
         print ("Upload file to Google Drive")
-        gdrive.upload(filename, upload_folder_id, delegate)
+        gdrive.upload(filename, self.storePath, upload_folder_id, delegate)
 
 
     def make_sure_path_exists(self, path):

@@ -20,6 +20,7 @@ SCOPES = 'https://www.googleapis.com/auth/drive.file'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'FAZ 2 Google Drive'
 MIME_TYPE = 'application/pdf'
+KEY_FILE = 'faz2drive-085360b9c8f3.json'
 #UPLOAD_FOLDER_ID = '0B49RQ5If-NmPY0V0bG00cHdsekE'
 
 
@@ -55,7 +56,7 @@ def get_credentials():
 
 def getServiceCredentials(delegate):
     print('Validating service credentials')
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('faz2drive-085360b9c8f3.json', scopes=SCOPES)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(KEY_FILE, scopes=SCOPES)
     delegated_credentials = credentials.create_delegated(delegate)
     return delegated_credentials
 

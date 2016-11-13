@@ -1,0 +1,19 @@
+apiVersion: batch/v2alpha1
+kind: ScheduledJob
+metadata:
+  name: faz2drive
+spec:
+  schedule: 0/10 * * * ?
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:          
+          containers:
+          - name: faz2drive
+            image: gcr.io/faz2drive/faz2drive:v1
+            args:
+            - python
+            - ./execute_FAZ_loader.py
+          restartPolicy: OnFailure
+          

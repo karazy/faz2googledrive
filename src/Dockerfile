@@ -1,7 +1,3 @@
 FROM python:3.5-onbuild
-
-RUN mkdir -p /opt/faz2drive
-
-#COPY src/* /opt/faz2drive/
-
-CMD ["python", "./execute_FAZ_loader.py"]
+#Images copies everything under source and install pip deps from requirements.txt
+#CMD ["python", "./execute_FAZ_loader.py"]

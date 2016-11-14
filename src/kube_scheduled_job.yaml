@@ -3,7 +3,7 @@ kind: ScheduledJob
 metadata:
   name: faz2drive
 spec:
-  schedule: 0/10 * * * ?
+  schedule: 0/30 0 * * ?
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:

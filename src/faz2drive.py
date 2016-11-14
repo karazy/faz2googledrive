@@ -44,11 +44,9 @@ class FazLoader(object):
         self.make_sure_path_exists(self.storePath)
         
         # download FAZ with rhein main part
-        self.downloadRMZ = False
+        self.downloadRMZ = True
         # download FAZ only
         self.downloadFAZ = True
-        # if new files were downloaded, send them directly to kindle
-        self.download2Kindle = False
         
         self.s = requests.Session()
         self.s.mount('https://', MyAdapter())
@@ -164,9 +162,10 @@ class FazLoader(object):
 
     def getAvailablePublications(self, dayOfWeek):
         if dayOfWeek == 6:
+            print('It is Sunday. Time for FAS.')
             url = "http://www.faz.net/e-paper/epaper/list/FAS"
         else:
-            url = "http://www.faz.net/e-paper/epaper/list/FAS"
+            url = "http://www.faz.net/e-paper/epaper/list/FAZ"
         
         req = self.s.get(url)
         if(req.status_code != 200):

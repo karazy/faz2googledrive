@@ -34,8 +34,15 @@ Check buildAndRun.sh for commands.
 
 WORK IN PROGRESS
 
+Create cluster
+gcloud alpha container clusters create faz2drive --zone europe-west1-b \                
+  --enable-kubernetes-alpha --machine-type n1-standard-1
+
 docker build --no-cache -t gcr.io/faz2drive/faz2drive:v1 .
 gcloud docker push gcr.io/faz2drive/faz2drive:v1
+
+Create job
+kubectl create -f kube_scheduled_job.yaml
 
 https://cloud.google.com/container-engine/docs/
 https://cloud.google.com/container-engine/docs/quickstart
@@ -51,6 +58,8 @@ Setup default credentials
 https://developers.google.com/identity/protocols/application-default-credentials
 
 http://kubernetes.io/docs/user-guide/scheduled-jobs/
+
+
 
 #Token error
 http://stackoverflow.com/questions/36189612/token-must-be-a-short-lived-token-and-in-a-reasonable-timeframe

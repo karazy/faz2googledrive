@@ -17,58 +17,19 @@ except ImportError:
 # If modifying these scopes, delete your previously saved credentials
 # at ~/.credentials/drive-python-quickstart.json
 SCOPES = 'https://www.googleapis.com/auth/drive.file'
-CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'FAZ 2 Google Drive'
 MIME_TYPE = 'application/pdf'
-KEY_FILE = 'faz2drive-085360b9c8f3.json'
-#UPLOAD_FOLDER_ID = '0B49RQ5If-NmPY0V0bG00cHdsekE'
 
 
-def get_credentials():
-    """Gets valid user credentials from storage.
-
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
-    Returns:
-        Credentials, the obtained credential.
-    """
-    print('Validating credentials')
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
-    if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir,
-                                   'faz-drive-uploader.json')
-
-    store = Storage(credential_path)
-    credentials = store.get()
-    if not credentials or credentials.invalid:
-        print('No credentials found. Authorize.')
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        if flags:
-            credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
-    return credentials
-
-def getServiceCredentials(delegate):
+def getServiceCredentials(delegate, keyFile):
     print('Validating service credentials')
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(KEY_FILE, scopes=SCOPES)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(keyFile, scopes=SCOPES)
     delegated_credentials = credentials.create_delegated(delegate)
     return delegated_credentials
 
 
-def upload(filename, file_folder, upload_folder_id, delegate):
-    """Shows basic usage of the Google Drive API.
-
-    Creates a Google Drive API service object and outputs the names and IDs
-    for up to 10 files.
-    """
-    #credentials = get_credentials()
-    credentials = getServiceCredentials(delegate)
+def upload(filename, file_folder, upload_folder_id, delegate, keyFile):
+    credentials = getServiceCredentials(delegate, keyFile)
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('drive', 'v3', http=http)
     
@@ -85,20 +46,3 @@ def upload(filename, file_folder, upload_folder_id, delegate):
         print('Uploaded "%s" (%s)' % (filename, res['mimeType']))
     else:
         print('No respsonse from Google Drive')
-    #
-    #results = service.files().list(
-     #   pageSize=10,fields="nextPageToken, files(id, name)").execute()
-    #items = results.get('files', [])
-    #if not items:
-    #    print('No files found.')
-    #else:
-    #    print('Files:')
-    #    for item in items:
-    #        print('{0} ({1})'.format(item['name'], item['id']))
-
-def main():
-    get_credentials()
-
-if __name__ == '__main__':
-    main()
-

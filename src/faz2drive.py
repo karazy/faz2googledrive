@@ -1,8 +1,3 @@
-'''
-Created on Nov 1, 2013
-
-@author: pete
-'''
 import requests
 import datetime
 import json
@@ -33,7 +28,7 @@ class FazLoader(object):
     def __init__(self, faz_login, drive_config):
         '''
         @param faz_login: tuple of FAZ login information (user, password)
-        @param drive_config: tuple of Gmail login information (user, password)
+        @param drive_config: tuple of Gmail login information (user, password, delegate, key file)
         '''
         self.fazLogin = faz_login
         self.drive_config = drive_config
@@ -102,7 +97,7 @@ class FazLoader(object):
         # remove previous versions
         found_prev = self._deletePrevious(filename)
 
-        self.upload2Drive(filename, self.drive_config[0], self.drive_config[1])
+        self.upload2Drive(filename, self.drive_config[0], self.drive_config[1], self.drive_config[2])
         self.removeDownload(filename)
         return True
     
@@ -178,9 +173,9 @@ class FazLoader(object):
             return json_info
 
     
-    def upload2Drive(self, filename, upload_folder_id, delegate):        
+    def upload2Drive(self, filename, upload_folder_id, delegate, kef_file):        
         print ("Upload file to Google Drive")
-        gdrive.upload(filename, self.storePath, upload_folder_id, delegate)
+        gdrive.upload(filename, self.storePath, upload_folder_id, delegate, kef_file)
 
 
     def make_sure_path_exists(self, path):

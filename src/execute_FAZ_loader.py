@@ -1,7 +1,5 @@
 '''
-Created on Nov 1, 2013
-This is a sample which downloads your files to downloads/ and sends new
-files to your Kindle
+Execute the FAZ download and Google Drive upload process
 
 Attention: It requires a valid e-paper abonement of FAZ.net
 
@@ -19,15 +17,13 @@ FAZ_PASS = config['FAZ']['Password']
 
 # Google Drive upload folder ID
 DRIVE_UPLOAD_FOLDER_ID = config['DRIVE']['Upload_folder_id']
+#Drive E-Mail of Google Apps user that is owner of the folder
 DRIVE_DELEGATE = config['DRIVE']['Delegate']
+#Google Service Account key file used for authentication
+DRIVE_KEY_FILE = config['DRIVE']['Key_file']
 
 print ('Starting faz2googledrive...')
-print ('Requesting downloads for {} and saving them to {}'.format(FAZ_USER, DRIVE_UPLOAD_FOLDER_ID))
+print ('Requesting downloads for FAZ user {} and saving them to {} for delegate {}'.format(FAZ_USER, DRIVE_UPLOAD_FOLDER_ID, DRIVE_DELEGATE))
 
-fazload = faz2drive.FazLoader((FAZ_USER, FAZ_PASS), (DRIVE_UPLOAD_FOLDER_ID, DRIVE_DELEGATE))
+fazload = faz2drive.FazLoader((FAZ_USER, FAZ_PASS), (DRIVE_UPLOAD_FOLDER_ID, DRIVE_DELEGATE, DRIVE_KEY_FILE))
 fazload.downloadAvailable()
-
-#TODO
-# - improve app auth
-# - improve date check?
-# - cleanup and docs

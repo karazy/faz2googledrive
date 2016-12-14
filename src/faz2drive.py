@@ -95,9 +95,10 @@ class FazLoader(object):
         f.close()
 
         # remove previous versions
-        found_prev = self._deletePrevious(filename)
+        found_prev = self._deletePrevious(filename)        
+        keyFile = os.path.join(os.path.dirname(__file__), self.drive_config[2]) 
 
-        self.upload2Drive(filename, self.drive_config[0], self.drive_config[1], self.drive_config[2])
+        self.upload2Drive(filename, self.drive_config[0], self.drive_config[1], keyFile)
         self.removeDownload(filename)
         return True
     

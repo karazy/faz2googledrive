@@ -4,7 +4,6 @@ import json
 import os
 import google_drive as gdrive
 import time
-import os
 import errno
 
 # debian hack

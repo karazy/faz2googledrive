@@ -40,8 +40,9 @@ Create cluster
 gcloud alpha container clusters create faz2drive --zone europe-west1-b \                
   --enable-kubernetes-alpha --machine-type n1-standard-1
 
-docker build --no-cache -t gcr.io/faz2drive/faz2drive:v1 .
-gcloud docker push gcr.io/faz2drive/faz2drive:v1
+Create docker container
+docker build --no-cache -t gcr.io/faz2drive/faz2drive:v2 .
+gcloud docker push gcr.io/faz2drive/faz2drive:v2
 
 Create job
 kubectl create -f kube_scheduled_job.yaml

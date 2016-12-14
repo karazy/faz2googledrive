@@ -7,9 +7,11 @@ Attention: It requires a valid e-paper abonement of FAZ.net
 '''
 import faz2drive
 import configparser
+import os
 
 config = configparser.ConfigParser()
-config.read('env.cfg')
+config_file = os.path.join(os.path.dirname(__file__), 'env.cfg')
+config.read(config_file)
 
 # FAZ login data
 FAZ_USER = config['FAZ']['Username']

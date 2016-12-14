@@ -33,7 +33,8 @@ class FazLoader(object):
         self.drive_config = drive_config
         
         # path to store pdf files
-        self.storePath = FazLoader.STORE_PATH
+        
+        self.storePath = os.path.join(os.path.dirname(__file__), FazLoader.STORE_PATH) 
 
         self.make_sure_path_exists(self.storePath)
         
@@ -179,7 +180,7 @@ class FazLoader(object):
 
     def make_sure_path_exists(self, path):
         try:
-            os.makedirs(path)
+            os.makedirs(path, exist_ok=True)
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise

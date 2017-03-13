@@ -5,6 +5,7 @@ import os
 import google_drive as gdrive
 import time
 import errno
+import re
 
 # debian hack
 from requests.adapters import HTTPAdapter
@@ -71,16 +72,14 @@ class FazLoader(object):
                 print ("removed older version of " + filename + ": "+pdf_file)
         return found_older
 
-    def download(self, year, month, day, rmz = False):
-        url = self.getDownloadLink( year, month, day, rmz)
-        
-        # if link could not be extracted
-        if(not url):
-            print ("No download link could be found for %d-%02d-%02d" % (year, month, day))
-            return False
-        
-        # get file name from url
-        filename =  url.split('/', )[-1]
+
+
+    def download(self, downloadId, isoDate):
+        baseUrl = 'http://epaper.faz.net/epaper/download/'
+
+        url = baseUrl + downloadId
+
+        filename = isoDate + '.pdf'
         if os.path.isfile(self.storePath + filename):
             print ("File " + filename +" already exists")
             return False
@@ -101,77 +100,55 @@ class FazLoader(object):
         self.upload2Drive(filename, self.drive_config[0], self.drive_config[1], keyFile)
         self.removeDownload(filename)
         return True
-    
-    def getDownloadLink(self, year, month, day, rmz = False):
-        s_year = str(year)
-        s_month = "%02d" % (month)
-        s_day = "%02d" % (day)
-        #http://epaper.faz.net/epaper/pdf/FAS/2016-11-13/20161113FAS2313.pdf
-        if(rmz == 'FAS'):
-            url_base = "http://www.faz.net/e-paper/epaper/pdf/FAS/"
-            url = "http://www.faz.net/e-paper/epaper/overview/FAS/%s-%s-%s" % (s_year, s_month, s_day)
-        elif(rmz):
-            url_base = "http://www.faz.net/e-paper/epaper/pdf/FAZ_RMZ/"
-            url = "http://www.faz.net/e-paper/epaper/overview/FAZ_RMZ/%s-%s-%s" % (s_year, s_month, s_day)
-        else:
-            url_base = "http://www.faz.net/e-paper/epaper/pdf/FAZ/"
-            url = "http://www.faz.net/e-paper/epaper/overview/FAZ/%s-%s-%s" % (s_year, s_month, s_day)
-        req = self.s.get(url)
-        
-        # if status not ok, return false
-        if(req.status_code != 200):
-            return False
 
-        json_info = json.loads(req.text)
-        pdf_name = json_info["ausgabePdf"]
-        
-        dl_url = "%s%s-%s-%s/%s"  % (url_base, s_year, s_month, s_day, pdf_name)
-        return dl_url
 
     def downloadAvailable(self):
         currentDate = (time.strftime("%d.%m.%Y"))
+        isoDate = (time.strftime("%Y-%m-%d"))
         dayOfWeek = datetime.datetime.today().weekday()
 
-        json_info = self.getAvailablePublications(dayOfWeek)        
-        
-        for i in range(0, len(json_info)):
-            # check all available publications
-            entities = json_info[i]["ausgaben"]
-            ## dd/mm/yyyy format
-            
-            for entity in entities: 
-                # extract date
-                date = entity["displayDatum"]
-                day, month, year = date.split(".")
-                day = int(day)
-                month = int(month)
-                year = int(year)
-                #Only download the issue of the current day
-                if date == currentDate:
-                    if entity["typ"] == "FAZ" and self.downloadFAZ:
-                        self.download(year, month, day, False)
-                    elif entity["typ"] == "FAZ_RMZ" and self.downloadRMZ:
-                        self.download(year, month, day, True)
-                    elif entity["typ"] == "FAS":
-                        self.download(year, month, day, 'FAS')
+        downloadId = self.getDownloadId(currentDate, dayOfWeek)        
+
+        #self.download(year, month, day, False)
+        self.download(downloadId, isoDate)
     
 
-    def getAvailablePublications(self, dayOfWeek):
+    def getDownloadId(self, currentDate, dayOfWeek):
+
+        url = "http://epaper.faz.net/api/epaper/change-release-date"
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type':'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+            }
+
         if dayOfWeek == 6:
             print('It is Sunday. Time for FAS.')
-            url = "http://www.faz.net/e-paper/epaper/list/FAS"
+            payload = {'slug': 'FAS', 'releaseDate': currentDate}
         else:
-            url = "http://www.faz.net/e-paper/epaper/list/FAZ"
+            payload = {'slug': 'FAZ', 'releaseDate': currentDate}
+
         
-        req = self.s.get(url)
+        req = self.s.post(url, json=payload, headers=headers)
+        
         if(req.status_code != 200):
-            print('Failed to retrieve publications.')
+            print('Failed to retrieve download id. Status {}'.format(req.status_code))
             return False
         else:
             json_info = json.loads(req.text) 
             if len(json_info) == 0:
-                print('No FAZ/FAS publications found.')           
-            return json_info
+                print('No FAZ/FAS publications found.')   
+            
+            content =  json_info['htmlContent']
+            return self.extractDownloadId(content)
+    
+
+    def extractDownloadId(self, content):
+        m = re.search('/webreader/(\d+)', content)
+        id = m.group(1)
+        
+        return id
+    
 
     
     def upload2Drive(self, filename, upload_folder_id, delegate, kef_file):        
@@ -187,5 +164,5 @@ class FazLoader(object):
                 raise
 
     def removeDownload(self, filename):        
-        os.remove(self.STORE_PATH + '/' + filename)
+        os.remove(self.storePath + '/' + filename)
         print('Removed download file  {}'.format(filename))

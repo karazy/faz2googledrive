@@ -32,38 +32,6 @@ python execute_FAZ_loader.py
 ## Run docker
 Run ./buildAndRun.sh in src.
 
-## Setup and run via Google Container Engine (kubernetes)
-
-WORK IN PROGRESS
-
-Create cluster
-gcloud alpha container clusters create faz2drive --zone europe-west1-b \                
-  --enable-kubernetes-alpha --machine-type n1-standard-1
-
-Create docker container
-docker build --no-cache -t gcr.io/faz2drive/faz2drive:v2 .
-gcloud docker push gcr.io/faz2drive/faz2drive:v2
-
-Create job
-kubectl create -f kube_scheduled_job.yaml
-
-https://cloud.google.com/container-engine/docs/
-https://cloud.google.com/container-engine/docs/quickstart
-
-Setup Service account
-
-http://kubernetes.io/docs/hellonode/
-
-No default credentials found.
-https://github.com/kubernetes/kubernetes/issues/30617
-
-Setup default credentials
-https://developers.google.com/identity/protocols/application-default-credentials
-
-http://kubernetes.io/docs/user-guide/scheduled-jobs/
-
-
-
 #Token error
 http://stackoverflow.com/questions/36189612/token-must-be-a-short-lived-token-and-in-a-reasonable-timeframe
 

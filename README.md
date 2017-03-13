@@ -7,13 +7,14 @@ without manually allowing access via browser.
 
 To run the script check the execute_FAZ_loader.py
 
-Script can either be run standalone, via Dockerfile or as a scheduled task in Google Container Engine.
+Script can either be run standalone or via Dockerfile.
 
 Attention: a valid e-paper abo is required to run this script. 
 
 
 ## Configuration
 Create an env.cfg file and put it under src
+
     [FAZ]
     Username = YOUR-FAZ-USER
     Password = YOUR-FAZ-PASS

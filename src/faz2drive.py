@@ -107,9 +107,12 @@ class FazLoader(object):
         isoDate = (time.strftime("%Y-%m-%d"))
         dayOfWeek = datetime.datetime.today().weekday()
 
-        downloadId = self.getDownloadId(currentDate, dayOfWeek)        
+        downloadId = self.getDownloadId(currentDate, dayOfWeek)
 
-        #self.download(year, month, day, False)
+        if(downloadId == False):
+            print('Abnormal termination.')
+            return False
+
         self.download(downloadId, isoDate)
     
 
@@ -127,20 +130,26 @@ class FazLoader(object):
             payload = {'slug': 'FAS', 'releaseDate': currentDate}
         else:
             payload = {'slug': 'FAZ', 'releaseDate': currentDate}
-
+                
         
         req = self.s.post(url, json=payload, headers=headers)
+
+        print('DownloadId request url={} json={} headers={}'.format(url, payload, headers))
         
         if(req.status_code != 200):
-            print('Failed to retrieve download id. Status {}'.format(req.status_code))
+            print('Failed to retrieve download id. Status = {} Message = {}'.format(req.status_code, json.loads(req.text)['message']))
             return False
         else:
             json_info = json.loads(req.text) 
             if len(json_info) == 0:
-                print('No FAZ/FAS publications found.')   
+                print('No FAZ/FAS publications found.')
+                return False             
             
             content =  json_info['htmlContent']
-            return self.extractDownloadId(content)
+            dID = self.extractDownloadId(content)
+
+            print('Extracted downloadId {}'.format(dID))
+            return dID
     
 
     def extractDownloadId(self, content):
